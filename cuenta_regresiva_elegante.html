@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cuenta Regresiva - Tiempo Faltante</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        /* Glassmorphism custom effects */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .glass-input {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        .glass-input:focus {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+        /* Smooth number transition effect */
+        .digit-change {
+            animation: pulseFade 0.4s ease-in-out;
+        }
+        @keyframes pulseFade {
+            0% { transform: scale(1.05); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-indigo-950 via-slate-900 to-purple-950 text-white flex flex-col justify-between items-center p-4 sm:p-6 overflow-x-hidden">
+
+    <header class="w-full max-w-4xl text-center mt-6 sm:mt-10">
+        <h1 class="text-3xl sm:text-5xl font-bold tracking-tight bg-gradient-to-r from-pink-400 via-purple-300 to-indigo-400 bg-clip-text text-transparent">
+            Cuenta Regresiva
+        </h1>
+        <p class="text-gray-300 text-sm sm:text-base mt-2 font-light">
+            Selecciona una fecha futura y descubre el tiempo exacto que falta.
+        </p>
+    </header>
+
+    <main class="w-full max-w-4xl my-auto py-6 flex flex-col items-center">
+        <!-- Input Form Card -->
+        <div class="glass-card w-full rounded-2xl p-6 sm:p-8 shadow-2xl mb-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <div class="flex flex-col w-full sm:w-auto flex-1">
+                <label for="datetimeInput" class="text-xs font-medium text-gray-300 mb-1 uppercase tracking-wider">Fecha y Hora Objetivo</label>
+                <input type="datetime-local" id="datetimeInput" 
+                    class="glass-input rounded-xl px-4 py-3 text-white text-base focus:outline-none focus:ring-2 focus:ring-purple-400 transition">
+            </div>
+            <div class="flex items-end w-full sm:w-auto mt-2 sm:mt-0">
+                <button id="startBtn" 
+                    class="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-purple-500/30 transition transform hover:-translate-y-0.5 active:translate-y-0">
+                    Iniciar Cuenta
+                </button>
+            </div>
+        </div>
+
+        <!-- Timer Display Grid -->
+        <div id="timerContainer" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 w-full">
+            <!-- Years -->
+            <div class="glass-card rounded-2xl p-4 sm:p-6 text-center flex flex-col items-center justify-center">
+                <span id="years" class="text-3xl sm:text-5xl font-bold tracking-tight text-pink-300">00</span>
+                <span class="text-xs sm:text-sm uppercase tracking-widest text-gray-400 mt-2">Años</span>
+            </div>
+            <!-- Months -->
+            <div class="glass-card rounded-2xl p-4 sm:p-6 text-center flex flex-col items-center justify-center">
+                <span id="months" class="text-3xl sm:text-5xl font-bold tracking-tight text-purple-300">00</span>
+                <span class="text-xs sm:text-sm uppercase tracking-widest text-gray-400 mt-2">Meses</span>
+            </div>
+            <!-- Days -->
+            <div class="glass-card rounded-2xl p-4 sm:p-6 text-center flex flex-col items-center justify-center">
+                <span id="days" class="text-3xl sm:text-5xl font-bold tracking-tight text-indigo-300">00</span>
+                <span class="text-xs sm:text-sm uppercase tracking-widest text-gray-400 mt-2">Días</span>
+            </div>
+            <!-- Hours -->
+            <div class="glass-card rounded-2xl p-4 sm:p-6 text-center flex flex-col items-center justify-center">
+                <span id="hours" class="text-3xl sm:text-5xl font-bold tracking-tight text-blue-300">00</span>
+                <span class="text-xs sm:text-sm uppercase tracking-widest text-gray-400 mt-2">Horas</span>
+            </div>
+            <!-- Minutes -->
+            <div class="glass-card rounded-2xl p-4 sm:p-6 text-center flex flex-col items-center justify-center">
+                <span id="minutes" class="text-3xl sm:text-5xl font-bold tracking-tight text-teal-300">00</span>
+                <span class="text-xs sm:text-sm uppercase tracking-widest text-gray-400 mt-2">Minutos</span>
+            </div>
+            <!-- Seconds -->
+            <div class="glass-card rounded-2xl p-4 sm:p-6 text-center flex flex-col items-center justify-center">
+                <span id="seconds" class="text-3xl sm:text-5xl font-bold tracking-tight text-emerald-300">00</span>
+                <span class="text-xs sm:text-sm uppercase tracking-widest text-gray-400 mt-2">Segundos</span>
+            </div>
+        </div>
+
+        <!-- Status Message / Alert box (Custom replacement for alert) -->
+        <div id="messageBox" class="mt-8 hidden glass-card rounded-xl px-6 py-3 text-center text-sm font-medium text-purple-200 border border-purple-500/30">
+            ¡El tiempo especificado ha llegado! 🎉
+        </div>
+    </main>
+
+    <footer class="w-full text-center py-4 text-xs text-gray-400 font-light">
+        Creado con estilo minimalista para GitHub Pages.
+    </footer>
+
+    <script>
+        let countdownInterval = null;
+        const datetimeInput = document.getElementById('datetimeInput');
+        const startBtn = document.getElementById('startBtn');
+        const messageBox = document.getElementById('messageBox');
+
+        const elYears = document.getElementById('years');
+        const elMonths = document.getElementById('months');
+        const elDays = document.getElementById('days');
+        const elHours = document.getElementById('hours');
+        const elMinutes = document.getElementById('minutes');
+        const elSeconds = document.getElementById('seconds');
+
+        // Set default date input to 7 days in the future
+        window.addEventListener('DOMContentLoaded', () => {
+            const defaultDate = new Date();
+            defaultDate.setDate(defaultDate.getDate() + 7);
+            // Format for datetime-local: YYYY-MM-DDTHH:mm
+            const year = defaultDate.getFullYear();
+            const month = String(defaultDate.getMonth() + 1).padStart(2, '0');
+            const day = String(defaultDate.getDate()).padStart(2, '0');
+            const hours = String(defaultDate.getHours()).padStart(2, '0');
+            const minutes = String(defaultDate.getMinutes()).padStart(2, '0');
+            
+            datetimeInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+            startCountdown();
+        });
+
+        startBtn.addEventListener('click', () => {
+            startCountdown();
+        });
+
+        function startCountdown() {
+            if (countdownInterval) clearInterval(countdownInterval);
+
+            const targetVal = datetimeInput.value;
+            if (!targetVal) {
+                showMessage("Por favor, selecciona una fecha y hora válida.");
+                return;
+            }
+
+            const targetDate = new Date(targetVal);
+            if (isNaN(targetDate.getTime())) {
+                showMessage("Fecha no válida.");
+                return;
+            }
+
+            messageBox.classList.add('hidden');
+
+            // Run immediately then every second
+            updateTimer(targetDate);
+            countdownInterval = setInterval(() => {
+                updateTimer(targetDate);
+            }, 1000);
+        }
+
+        function updateTimer(targetDate) {
+            const now = new Date();
+            let diff = targetDate.getTime() - now.getTime();
+
+            if (diff <= 0) {
+                clearInterval(countdownInterval);
+                elYears.textContent = "00";
+                elMonths.textContent = "00";
+                elDays.textContent = "00";
+                elHours.textContent = "00";
+                elMinutes.textContent = "00";
+                elSeconds.textContent = "00";
+                showMessage("¡La fecha objetivo ha llegado o ya pasó! 🚀");
+                return;
+            }
+
+            // High precision calendar breakdown
+            let years = targetDate.getFullYear() - now.getFullYear();
+            let months = targetDate.getMonth() - now.getMonth();
+            let days = targetDate.getDate() - now.getDate();
+            let hours = targetDate.getHours() - now.getHours();
+            let minutes = targetDate.getMinutes() - now.getMinutes();
+            let seconds = targetDate.getSeconds() - now.getSeconds();
+
+            if (seconds < 0) {
+                seconds += 60;
+                minutes--;
+            }
+            if (minutes < 0) {
+                minutes += 60;
+                hours--;
+            }
+            if (hours < 0) {
+                hours += 24;
+                days--;
+            }
+            if (days < 0) {
+                // Get days in previous month
+                const prevMonth = new Date(targetDate.getFullYear(), targetDate.getMonth(), 0);
+                days += prevMonth.getDate();
+                months--;
+            }
+            if (months < 0) {
+                months += 12;
+                years--;
+            }
+
+            if (years < 0) {
+                years = 0;
+                months = 0;
+                days = 0;
+                hours = 0;
+                minutes = 0;
+                seconds = 0;
+            }
+
+            updateDigit(elYears, String(years).padStart(2, '0'));
+            updateDigit(elMonths, String(months).padStart(2, '0'));
+            updateDigit(elDays, String(days).padStart(2, '0'));
+            updateDigit(elHours, String(hours).padStart(2, '0'));
+            updateDigit(elMinutes, String(minutes).padStart(2, '0'));
+            updateDigit(elSeconds, String(seconds).padStart(2, '0'));
+        }
+
+        function updateDigit(element, newValue) {
+            if (element.textContent !== newValue) {
+                element.textContent = newValue;
+                element.classList.remove('digit-change');
+                void element.offsetWidth; // Trigger reflow
+                element.classList.add('digit-change');
+            }
+        }
+
+        function showMessage(msg) {
+            messageBox.textContent = msg;
+            messageBox.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
